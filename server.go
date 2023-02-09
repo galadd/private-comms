@@ -1,10 +1,10 @@
 package main
 
 import (
+	"os"
 	"bufio"
 	"fmt"
 	"net"
-	"strings"
 )
 
 func main() {
@@ -29,17 +29,42 @@ func main() {
 
 func handleConnection(conn net.Conn) {
 	username := conn.RemoteAddr().String()
-	fmt.Println("New client connected:", username)
+	fmt.Println("Accepted connection from:", username)
+
+	messageChan := make(chan string)
+	go func() {
+		for {
+			message, err := bufio.NewReader(conn).ReadString('\n')
+			if err != nil {
+				fmt.Println("Closed connection from:", username)
+				break
+			}
+			messageChan <- message
+		}
+		conn.Close()
+	}()
+
+	go func() {
+		for {
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Print("Enter message to send: ")
+			message, _ := reader.ReadString('\n')
+			if message == "\n" {
+				continue
+			}
+			sendMessage := username + ": " + message
+			fmt.Println(sendMessage)
+			fmt.Fprint(conn, sendMessage)
+		}
+	}()
 
 	for {
-		message, err := bufio.NewReader(conn).ReadString('\n')
-		if err != nil {
-			fmt.Println("Connection closed:", username)
-			return
+		select {
+		case message := <-messageChan:
+			fmt.Println()
+			fmt.Println("Received from client:", message)
+			fmt.Print("Enter message to send: ")
 		}
-		if strings.TrimSpace(message) == "" {
-			continue
-		}
-		fmt.Println(username + ": " + message)
 	}
 }
+

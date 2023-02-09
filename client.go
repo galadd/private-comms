@@ -18,13 +18,36 @@ func main() {
 	username := conn.LocalAddr().String()
 	fmt.Println("Connected to server as:", username)
 
-	for {
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Enter message: ")
-		message, _ := reader.ReadString('\n')
-		if message == "\n" {
-			continue
+	messageChan := make(chan string)
+	go func() {
+		for {
+			message, err := bufio.NewReader(conn).ReadString('\n')
+			if err != nil {
+				fmt.Println("Connection closed")
+				return
+			}
+			messageChan <- message
 		}
-		fmt.Fprint(conn, message)
+	}()
+
+	go func() {
+		for {
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Print("Enter message to send: ")
+			message, _ := reader.ReadString('\n')
+			if message == "\n" {
+				continue
+			}
+			fmt.Fprint(conn, message)
+		}
+	}()
+
+	for {
+		select {
+		case message := <-messageChan:
+			fmt.Println()
+			fmt.Println("Received from server:", message)
+			fmt.Print("Enter message to send: ")
+		}
 	}
 }
