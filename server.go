@@ -1,16 +1,17 @@
 package main
 
 import (
-	"os"
-	"bufio"
 	"fmt"
 	"net"
+	"bufio"
+	"os"
+
+	e "github.com/galadd/private-network/encryption"
 )
 
 func main() {
 	fmt.Println("Starting server...")
-
-	ln, err := net.Listen("tcp", ":8080") 
+	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -28,43 +29,54 @@ func main() {
 }
 
 func handleConnection(conn net.Conn) {
+	key := []byte("01234567890123456789012345678901")
+	// get my username
+	// myUsername := conn.LocalAddr().String()
 	username := conn.RemoteAddr().String()
 	fmt.Println("Accepted connection from:", username)
+	defer conn.Close()
 
-	messageChan := make(chan string)
+	messageChan := make(chan []byte)
 	go func() {
 		for {
-			message, err := bufio.NewReader(conn).ReadString('\n')
+			buf := make([]byte, 1024)
+			_, err := conn.Read(buf)
 			if err != nil {
-				fmt.Println("Closed connection from:", username)
-				break
+				fmt.Println(err)
+				return
 			}
-			messageChan <- message
+
+			for i := len(buf) - 1; i >= 0; i-- {
+				if buf[i] != 0 {
+					break
+				}
+				buf = buf[:i]
+			}
+
+			decrypt, _ := e.Decrypt(buf, key)
+
+			messageChan <- decrypt
 		}
-		conn.Close()
 	}()
 
 	go func() {
 		for {
 			reader := bufio.NewReader(os.Stdin)
-			fmt.Print("Enter message to send: ")
+			fmt.Print("=> ")
 			message, _ := reader.ReadString('\n')
-			if message == "\n" {
-				continue
-			}
-			sendMessage := username + ": " + message
-			fmt.Println(sendMessage)
-			fmt.Fprint(conn, sendMessage)
+
+			byteMessage := []byte(message)
+			ciphertext, _ := e.Encrypt(byteMessage, key)
+
+			conn.Write(ciphertext)
 		}
 	}()
 
 	for {
 		select {
 		case message := <-messageChan:
-			fmt.Println()
-			fmt.Println("Received from client:", message)
-			fmt.Print("Enter message to send: ")
+			fmt.Printf("%v: %v", username, string(message))
+			fmt.Print("=> ")
 		}
 	}
 }
-
