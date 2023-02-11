@@ -11,7 +11,7 @@ import (
 
 func main() {
 	fmt.Println("Starting server...")
-	ln, err := net.Listen("tcp", ":8080")
+	ln, err := net.Listen("tcp", ":4357")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -59,11 +59,13 @@ func handleConnection(conn net.Conn) {
 		}
 	}()
 
+	reader := bufio.NewReader(os.Stdin)
 	go func() {
 		for {
-			reader := bufio.NewReader(os.Stdin)
-			fmt.Print("=> ")
+			fmt.Print("=> ")	
 			message, _ := reader.ReadString('\n')
+			fmt.Print("\033[1A\033[2K")
+			fmt.Print("You: " + message)
 
 			byteMessage := []byte(message)
 			ciphertext, _ := e.Encrypt(byteMessage, key)

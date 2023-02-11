@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "localhost:8080")
+	conn, err := net.Dial("tcp", "localhost:4357")
 	if err != nil {
 		fmt.Println("Error dialing", err.Error())
 		return
@@ -50,6 +50,8 @@ func main() {
 			reader := bufio.NewReader(os.Stdin)
 			fmt.Print("=> ")
 			message, _ := reader.ReadString('\n')
+			fmt.Print("\033[1A\033[2K")
+			fmt.Print("You: " + message)
 
 			byteMessage := []byte(message)
 			ciphertext, _ := e.Encrypt(byteMessage, key)
