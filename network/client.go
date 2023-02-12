@@ -1,4 +1,4 @@
-package main
+package network
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	e "github.com/galadd/private-network/encryption"
 )
 
-func main() {
+func ClientMain() {
 	conn, err := net.Dial("tcp", "localhost:4357")
 	if err != nil {
 		fmt.Println("Error dialing", err.Error())

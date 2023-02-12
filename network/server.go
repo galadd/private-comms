@@ -1,4 +1,4 @@
-package main
+package network
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ import (
 // 	PublicKey []byte
 // }
 
-func main() {
+func ServerMain() {
 	fmt.Println("Starting server...")
 	ln, err := net.Listen("tcp", ":4357")
 	if err != nil {
@@ -47,7 +47,7 @@ func handleConnection(conn net.Conn) {
 
 	conn.Write(keyPair.PublicKey[:])
 	buf := make([]byte, 1024)
-	_, err := conn.Read(buf)
+	_, err = conn.Read(buf)
 	if err != nil {
 		fmt.Println(err)
 		return
