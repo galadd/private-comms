@@ -6,8 +6,14 @@ import (
 	"bufio"
 	"os"
 
+	// auth "github.com/galadd/private-network/authentication"
 	e "github.com/galadd/private-network/encryption"
 )
+
+// type AuthKeys struct {
+// 	PrivateKey []byte
+// 	PublicKey []byte
+// }
 
 func main() {
 	fmt.Println("Starting server...")
@@ -29,12 +35,35 @@ func main() {
 }
 
 func handleConnection(conn net.Conn) {
-	key := []byte("01234567890123456789012345678901")
-	// get my username
-	// myUsername := conn.LocalAddr().String()
+	keyPair, err := e.GenerateKeypair()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	username := conn.RemoteAddr().String()
-	fmt.Println("Accepted connection from:", username)
+	fmt.Println("Accepted connection from:", username)	
 	defer conn.Close()
+
+	conn.Write(keyPair.PublicKey[:])
+	buf := make([]byte, 1024)
+	_, err := conn.Read(buf)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for i := len(buf) - 1; i >= 0; i-- {
+		if buf[i] != 0 {
+			break
+		}
+		buf = buf[:i]
+	}
+	key, err := e.DH(keyPair.PrivateKey[:], buf)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	messageChan := make(chan []byte)
 	go func() {

@@ -17,10 +17,36 @@ func main() {
 	}
 	defer conn.Close()
 
+	keyPair, err := e.GenerateKeypair()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	
+	conn.Write(keyPair.PublicKey[:])
+
 	username := conn.LocalAddr().String()
 	fmt.Println("Connected to server as", username)
 
-	key := []byte("01234567890123456789012345678901")
+	// receive public key from server
+	buf := make([]byte, 1024)
+	_, err = conn.Read(buf)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for i := len(buf) - 1; i >= 0; i-- {
+		if buf[i] != 0 {
+			break
+		}
+		buf = buf[:i]
+	}
+	key, err := e.DH(keyPair.PrivateKey[:], buf)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	messageChan := make(chan []byte)
 	go func() {
