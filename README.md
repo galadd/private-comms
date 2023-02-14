@@ -12,7 +12,7 @@ git clone https://github.com/galadd/private-comms.git
 ```bash
 go run main.go
 ```
-If you generate a new keypair, create an additional key, respHexPubKey, in the .env file and set it to the encoded public key of the responder. 
+If you generate a new keypair, create an additional key, "RESPONDER_PUB_KEY", in the .env file and set it to the encoded public key of the responder. 
 
 4. Follow the program prompts
 
