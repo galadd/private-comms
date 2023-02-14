@@ -8,11 +8,12 @@ import (
 	"encoding/pem"
 	"os"
 
-	"github.com/galadd/private-network/network"
 	"gopkg.in/AlecAivazis/survey.v1"
 	"github.com/joho/godotenv"
 
-	auth "github.com/galadd/private-network/authentication"
+	"github.com/galadd/private-comms/intro"
+	"github.com/galadd/private-comms/network"
+	auth "github.com/galadd/private-comms/authentication"
 )
 
 var (
@@ -26,13 +27,14 @@ var (
 )
 
 func main() {
-	fmt.Println("Start the program if you have a keypair and responder's public key in .env file")
+	intro.Intro()
+	
 	usage := ""
 	prompt := &survey.Select{
 		Message: "Select",
 		Options: []string{
 			"Generate a new keypair",
-			"Use an existing keypair",
+			"Start Program",
 			"Exit",
 		},
 	}
@@ -47,43 +49,14 @@ func main() {
 		}
 
 		write(hexEncodedPriv, hexEncodedPub)
-		respHexPub := os.Getenv("RESPONDER_PUB_KEY")
-		respAuthPublicKey, err = decodeHexPub(respHexPub)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
 
-		myHexPriv := os.Getenv("HEX_ENCODED_PRIVATE")
-		myAuthPrivateKey, err = decodeHexPriv(myHexPriv)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		start := ""
-		prompt = &survey.Select{
-			Message: "",
-			Options: []string{
-				"Start",
-				"Exit",
-			},
-		}
-		survey.AskOne(prompt, &start, nil)
-
-		switch start {
-		case "Start":
-			operation()
-		case "Exit":
-			os.Exit(0)
-		}
-
-	case "Use an existing keypair":
+	case "Start Program":
 		err = godotenv.Load(".env")
 		if err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
+
 		myHexPriv := os.Getenv("HEX_ENCODED_PRIVATE")
 		myAuthPrivateKey, err = decodeHexPriv(myHexPriv)
 		if err != nil {
@@ -98,15 +71,14 @@ func main() {
 			os.Exit(1)
 		}
 
-		operation()
-		
+		operation(myAuthPrivateKey, respAuthPublicKey)		
 
 	case "Exit":
 		os.Exit(0)
 	}
 }
 
-func operation() {
+func operation(myAuthPrivateKey *rsa.PrivateKey, respAuthPublicKey *rsa.PublicKey) {
 	choice := ""
 	prompt := &survey.Select{
 		Message: "Are you the initiator or responder?",
