@@ -15,6 +15,13 @@ go run main.go
 If you generate a new keypair, create an additional key, "RESPONDER_PUB_KEY", in the .env file and set it to the encoded public key of the responder. 
 
 4. Follow the program prompts
+```bash
+go run main.go
+# Select Start Program
+```
+
+5. It's imprtant to know the order, and both parties are aware
+Responder can not connect if the Initiator has not run the program first.
 
 ## How it works
 The program uses the RSA algorithm to generate a keypair and sign/verify messages. The program uses AES-256 to encrypt/decrypt messages. The program uses the Diffie-Hellman key exchange algorithm to generate a shared secret key. This is the key used by AES-256 to encrypt/decrypt messages. 
