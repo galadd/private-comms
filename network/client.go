@@ -11,8 +11,8 @@ import (
 	e "github.com/galadd/private-comms/encryption"
 )
 
-func ClientMain(myPrivateKey *rsa.PrivateKey, respPublicKey *rsa.PublicKey) {
-	conn, err := net.Dial("tcp", "localhost:4357")
+func ClientMain(myPrivateKey *rsa.PrivateKey, respPublicKey *rsa.PublicKey, ip string) {
+	conn, err := net.Dial("tcp", ip + ":4357")
 	if err != nil {
 		fmt.Println("Error dialing", err.Error())
 		return

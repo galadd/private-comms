@@ -93,7 +93,12 @@ func operation(myAuthPrivateKey *rsa.PrivateKey, respAuthPublicKey *rsa.PublicKe
 	case "initiator":
 		network.ServerMain(myAuthPrivateKey, respAuthPublicKey)
 	case "responder":
-		network.ClientMain(myAuthPrivateKey, respAuthPublicKey)
+		ip := ""
+		prompt := &survey.Input{
+			Message: "Enter the IP address of the initiator:",
+		}
+		survey.AskOne(prompt, &ip, nil)
+		network.ClientMain(myAuthPrivateKey, respAuthPublicKey, ip)
 	case "exit":
 		os.Exit(0)
 	}
