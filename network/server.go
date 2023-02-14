@@ -5,17 +5,13 @@ import (
 	"net"
 	"bufio"
 	"os"
+	"crypto/rsa"
 
-	// auth "github.com/galadd/private-network/authentication"
+	auth "github.com/galadd/private-network/authentication"
 	e "github.com/galadd/private-network/encryption"
 )
 
-// type AuthKeys struct {
-// 	PrivateKey []byte
-// 	PublicKey []byte
-// }
-
-func ServerMain() {
+func ServerMain(myPrivateKey *rsa.PrivateKey, respPublicKey *rsa.PublicKey) {
 	fmt.Println("Starting server...")
 	ln, err := net.Listen("tcp", ":4357")
 	if err != nil {
@@ -30,11 +26,11 @@ func ServerMain() {
 			fmt.Println(err)
 			continue
 		}
-		go handleConnection(conn)
+		go handleConnection(conn, myPrivateKey, respPublicKey)
 	}
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn, myPrivateKey *rsa.PrivateKey, respPublicKey *rsa.PublicKey) {
 	keyPair, err := e.GenerateKeypair()
 	if err != nil {
 		fmt.Println(err)
@@ -81,6 +77,14 @@ func handleConnection(conn net.Conn) {
 				}
 				buf = buf[:i]
 			}
+			signature := buf[:256]
+			buf = buf[256:]
+
+			err = auth.VerifySignature(respPublicKey, buf, signature)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 
 			decrypt, _ := e.Decrypt(buf, key)
 
@@ -99,6 +103,14 @@ func handleConnection(conn net.Conn) {
 			byteMessage := []byte(message)
 			ciphertext, _ := e.Encrypt(byteMessage, key)
 
+
+			signature, err := auth.SignMessage(myPrivateKey, ciphertext)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			conn.Write(signature)
 			conn.Write(ciphertext)
 		}
 	}()

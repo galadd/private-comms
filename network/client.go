@@ -5,11 +5,13 @@ import (
 	"net"
 	"bufio"
 	"os"
+	"crypto/rsa"
 
+	auth "github.com/galadd/private-network/authentication"
 	e "github.com/galadd/private-network/encryption"
 )
 
-func ClientMain() {
+func ClientMain(myPrivateKey *rsa.PrivateKey, respPublicKey *rsa.PublicKey) {
 	conn, err := net.Dial("tcp", "localhost:4357")
 	if err != nil {
 		fmt.Println("Error dialing", err.Error())
@@ -64,9 +66,17 @@ func ClientMain() {
 				}
 				buf = buf[:i]
 			}
+			signature := buf[:256]
+			buf = buf[256:]
+
+			// verify signature
+			err  = auth.VerifySignature(respPublicKey, buf, signature)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 
 			decrypt, _ := e.Decrypt(buf, key)
-
 			messageChan <- decrypt
 		}
 	}()
@@ -82,6 +92,13 @@ func ClientMain() {
 			byteMessage := []byte(message)
 			ciphertext, _ := e.Encrypt(byteMessage, key)
 
+			signature, err := auth.SignMessage(myPrivateKey, ciphertext)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			ciphertext = append(signature, ciphertext...)
 			conn.Write(ciphertext)
 		}
 	}()
