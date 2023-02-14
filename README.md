@@ -43,6 +43,12 @@ HEX_ENCODED_PRIVATE= # The private key encoded in hex
 RESPONDER_PUB_KEY= # The responder's public key encoded in hex
 ```
 
+<p align="center" width="100%">
+ <img src="./intro/intro.png" alt="intro"/>
+</p>
+Image: The program in action
+</br>
+
 ## How it works
 The program uses the RSA algorithm to generate a keypair and sign/verify messages. The program uses AES-256 to encrypt/decrypt messages. The program uses the Diffie-Hellman key exchange algorithm to generate a shared secret key. This is the key used by AES-256 to encrypt/decrypt messages. 
 
