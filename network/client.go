@@ -7,8 +7,8 @@ import (
 	"os"
 	"crypto/rsa"
 
-	auth "github.com/galadd/private-network/authentication"
-	e "github.com/galadd/private-network/encryption"
+	auth "github.com/galadd/private-comms/authentication"
+	e "github.com/galadd/private-comms/encryption"
 )
 
 func ClientMain(myPrivateKey *rsa.PrivateKey, respPublicKey *rsa.PublicKey) {
