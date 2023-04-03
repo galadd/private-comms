@@ -110,7 +110,7 @@ func handleConnection(conn net.Conn, myPrivateKey *rsa.PrivateKey, respPublicKey
 				return
 			}
 
-			conn.Write(signature)
+			ciphertext = append(signature, ciphertext...)
 			conn.Write(ciphertext)
 		}
 	}()
