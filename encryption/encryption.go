@@ -38,10 +38,10 @@ func Decrypt(ciphertext []byte, key []byte) ([]byte, error) {
 	}
 
 	iv := ciphertext[:aes.BlockSize]
-	ciphertext = ciphertext[aes.BlockSize:]
+	plaintext := ciphertext[aes.BlockSize:]
 
 	stream := cipher.NewCFBDecrypter(block, iv)
-	stream.XORKeyStream(ciphertext, ciphertext)
+	stream.XORKeyStream(plaintext, plaintext)
 
-	return ciphertext, nil
+	return plaintext, nil
 }
