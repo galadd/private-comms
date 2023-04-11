@@ -7,17 +7,16 @@ Note: You must have the responder's generated public encoded key (in string) to 
 1. Clone the repository
 ```bash
 git clone https://github.com/galadd/private-comms.git
-cd private-comms
 ```
 3. Run the program
 ```bash
-./private-comms
+private-comms/private-comms
 ```
 If you generate a new keypair, create an additional key, "RESPONDER_PUB_KEY", in the .env file and set it to the encoded public key of the responder. 
 
 4. Follow the program prompts
 ```bash
-./private-comms
+private-comms/private-comms
 # Select `Start Program`
 ```
 
@@ -27,7 +26,7 @@ Responder can not connect if the Initiator has not run the program first.
 ## How to generate a new keypair
 1. Run the program
 ```bash
-./private-comms
+private-comms/private-comms
 ```
 
 2. Select `Generate New Keypair`
